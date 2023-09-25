@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "mongoose-slug-generator": "^1.0.4",
+    "slugify": "^1.6.5"
+  }
+}
