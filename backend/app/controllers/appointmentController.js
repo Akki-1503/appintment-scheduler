@@ -47,6 +47,18 @@ appointmentCtlr.getAvailableSlots = async(req, res) => {
     }
 }
 
+// appointmentCtlr.getAvailableSlots = async (req, res) => {
+//     try {
+//         const doctorId = req.params.id // Assuming you pass the doctor's ID in the URL
+//         const doctor = await Doctor.findById(doctorId)
+//         const availableSlots = await Slot.find({ isBooked: false })
+//         res.json(availableSlots)
+//     } catch (err) {
+//         res.status(500).json({ error: 'Internal server error' })
+//     }
+// }
+
+
 appointmentCtlr.getDoctorSlots = async (req, res) => {
     try {
         const doctorSlug = req.query.doctorSlug
