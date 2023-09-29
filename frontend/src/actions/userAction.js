@@ -30,10 +30,10 @@ const userLogin = (userData) => {
     return {type: "USER_LOGIN", payload: userData}
 }
 
-export const startGetUserAccount = (userData) => {
+export const startGetUserAccount = () => {
     return async(dispatch) => {
         try{
-            const response = await axios.get('http://localhost:3321/api/users/account', userData)
+            const response = await axios.get('http://localhost:3321/api/users/account')
             dispatch(userAccount(response.data))
         } catch(err) {
             alert(err.message)
