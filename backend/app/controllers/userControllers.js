@@ -7,6 +7,7 @@ const usersCtlr = {}
 usersCtlr.register = async (req, res) => {
     try{
         const body = pick(req.body, ['username', 'email', 'password', 'role'])
+        console.log(req.body, 'body')
         const user = new User(body)
         const userCount = await User.countDocuments()
         if(userCount === 0) {
@@ -25,6 +26,7 @@ usersCtlr.register = async (req, res) => {
 usersCtlr.login = async (req, res) => {
     try{
         const body = pick(req.body, ['email', 'password', 'role'])
+        console.log(req.body, 'body')
         const user = await User.findOne({email: body.email})
         if(user) {
             const result = await bcrypt.compare(body.password, user.password)

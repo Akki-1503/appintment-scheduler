@@ -1,17 +1,28 @@
-import React from 'react';
-import RegistrationForm from './RegistrationForm'; // Import your components
-import LoginForm from './LoginForm';
-import AccountInfo from './AccountInfo';
+import React from 'react'
+import {BrowserRouter as Router, Route, Redirect, Switch} from 'react-router-dom'
+import RegistrationForm from './components/registrationForm' // Import your components
+import LoginForm from './components/loginForm'
+import AccountInfo from './components/accountInfo'
+import DoctorDashboard from './components/doctorDashboard'
 
 function App() {
   return (
       <div className="App">
-        <h1>My App</h1>
-        <RegistrationForm />
-        <LoginForm />
-        <AccountInfo />
+        <Router>
+          <Switch>
+            <Route path='/register' component={RegistrationForm} exact={true} />
+            <Route path='/login' component={LoginForm} />
+            <Route path='/account' component={AccountInfo} />
+            <Route path='/doctor-dashboard' component={DoctorDashboard} />
+            <Redirect to='/register' />
+          </Switch>
+        </Router>
+
+        {/* <RegistrationForm />
+         <LoginForm />
+        <AccountInfo />  */}
       </div>
-  );
+  )
 }
 
-export default App;
+export default App

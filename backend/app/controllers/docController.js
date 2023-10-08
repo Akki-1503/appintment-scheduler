@@ -37,25 +37,23 @@ docCtlr.remove = async(req, res) => {
         }
     }
 
-docCtlr.create = async(req, res) => {
-    try{
-        const body = req.body
-        const slug = slugify(`${body.doctorName}-${body.clinicName}`)
-        console.log('cs', slug)
+docCtlr.create = async (req, res) => {
+    try {
+        const body = req.body;
+        const slug = slugify(`${body.doctorName}-${body.clinicName}`);
+        console.log('cs', slug);
         const doctor = new Doctor({
             ...body,
             slug: slug,
             userId: req.user._id
-        })
-        //doctor.user = req.user.id
-        const doctorDocument = await doctor.save()
-        //console.log('DD', doctorDocument)
-        res.json(doctorDocument) 
-    } catch(err) {
-        res.json(err)
+        });
+            const doctorDocument = await doctor.save();
+            res.status(201).json({ message: 'Doctor profile created successfully', doctor: doctorDocument });
+        } catch (err) {
+            res.status(500).json({ error: 'Failed to create doctor profile', message: err.message });
     }
-}
-
+};
+    
 docCtlr.show = async(req, res) => {
     try{
         const slug = req.params.slug
