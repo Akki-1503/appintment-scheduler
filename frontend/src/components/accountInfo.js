@@ -54,31 +54,29 @@ import { Container, Row, Col, Alert } from 'react-bootstrap'; // Import Bootstra
 
 function AccountInfo() {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user); // Assuming user data is stored in the Redux state
+  const user = useSelector((state) => state.user.user.user); // Assuming user data is stored in the Redux state
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const role = useSelector((state) => state.user.role);
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated)
 
   useEffect(() => {
     // Dispatch the account retrieval action when the component mounts
-    dispatch(startGetUserAccount());
-    //dispatch(startSetUserRole());
-  }, [dispatch]);
+    dispatch(startGetUserAccount())
+  }, [dispatch])
 
   return (
     <Container>
       <h2>Account Information</h2>
-      {isAuthenticated ? (
-        <Row>
-          <Col>
-            <p>Username: {user.username}</p>
-            <p>Email: {user.email}</p>
-          </Col>
-        </Row>
+      {user.isAuthenticated ? (
+        <div>
+          <p>Username: {user.user.username}</p>
+          <p>Email: {user.user.email}</p>
+        </div>
       ) : (
         <Alert variant="warning">Please log in to view your account information.</Alert>
       )}
-    </Container>
-  );
+    </div>
+  )
 }
 
-export default AccountInfo;
+export default AccountInfo

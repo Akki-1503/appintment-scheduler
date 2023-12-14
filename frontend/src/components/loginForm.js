@@ -1,6 +1,7 @@
 // import React, {useState} from "react"
 // import { useDispatch } from "react-redux"
 // import { useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 // import { startLoginUser } from "../actions/userAction"
 
 // function LoginForm() {
@@ -126,61 +127,41 @@ import { startLoginUser } from '../actions/userAction';
 import { useHistory } from 'react-router-dom';
 
 function LoginForm() {
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const error = useSelector((state) => state.user.error);
+    const dispatch = useDispatch()
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    })
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+    const handleInputChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name] : e.target.value
+        })
+    }
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        dispatch(startLoginUser(formData))
+    }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(startLoginUser(formData, history));
-  };
+    return (
+        <div>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Email
+                    <input type= 'email' name= 'email' placeholder='email' value={formData.email} onChange={handleInputChange} />
+                </label>
 
-  return (
-    <Container>
-      <Row className="justify-content-md-center mt-5">
-        <Col md={6}>
-          <Form onSubmit={handleSubmit}>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Email address</Form.Label> <br />
-              <Form.Control
-                type="email"
-                placeholder="Enter email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-              /> <br />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Label>Password</Form.Label> <br />
-              <Form.Control
-                type="password"
-                placeholder="Password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-              /> <br />
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              Login
-            </Button>
-          </Form>
-        </Col>
-      </Row>
-    </Container>
-  );
+                <label>
+                    Password
+                    <input type= 'password' name= 'password' placeholder='password' value={formData.password} onChange={handleInputChange} />
+                </label>
+
+                <input type="login" />
+            </form>
+        </div>
+    )
 }
 
-export default LoginForm;
+export default LoginForm
