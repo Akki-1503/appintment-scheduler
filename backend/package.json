@@ -21,9 +21,8 @@
     "moment": "^2.29.4",
     "mongoose": "^7.4.4",
     "nodemailer": "^6.9.5",
-    "razorpay": "^2.9.2",
-    "razorpayx-nodejs-sdk": "^2.0.4",
     "slug": "^8.2.3",
+    "stripe": "^14.3.0",
     "time-slots-generator": "^1.0.6"
   }
 }

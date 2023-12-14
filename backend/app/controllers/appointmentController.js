@@ -61,11 +61,12 @@ appointmentCtlr.getAvailableSlots = async(req, res) => {
 
 appointmentCtlr.getDoctorSlots = async (req, res) => {
     try {
-        const doctorSlug = req.query.doctorSlug
-        //console.log('ds', doctorSlug)
-        const doctor = await Doctor.findOne({slug: doctorSlug})
-        //console.log(doctor, 'doc')
+        const doctorId = req.query.doctorId
+        console.log('doctorId', doctorId)
+        const doctor = await Doctor.findOne({_id: doctorId})
+        console.log('doctor', doctor)
         const slots = await Slot.find({ isBooked: true })
+        console.log('slots', slots)
         res.json(slots)
     } catch (err) {
         res.json({ message: err.message })
@@ -74,9 +75,9 @@ appointmentCtlr.getDoctorSlots = async (req, res) => {
 
 appointmentCtlr.show = async(req, res) => {
     try{
-        const slug = req.params.slug
-        console.log('show slug', slug)
-        const appointment = await Appointment.findOne({slug})
+        const id = req.params.id
+        console.log('id', id)
+        const appointment = await Appointment.findOne({_id: id})
             .populate('doctor')
             .populate('slots')
             .populate('user')

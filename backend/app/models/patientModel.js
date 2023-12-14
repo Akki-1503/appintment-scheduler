@@ -14,7 +14,7 @@ const patientSchema = new Schema({
     gender:{
         type:String,
         required: true
-     },
+    },
     phonenumber:{
         type:Number,
         required: true

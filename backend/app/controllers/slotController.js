@@ -156,6 +156,7 @@ slotCtlr.create = async (req, res) => {
 slotCtlr.list = async(req, res) => {
     try{
         const slots = await Slot.find()
+        console.log(slots, 'slots')
         res.json(slots)
     } catch(err) {
         res.json(err)

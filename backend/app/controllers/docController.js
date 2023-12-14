@@ -5,10 +5,22 @@ const docCtlr = {}
 
 docCtlr.list = async(req, res) => {
     try{
-        const doctors = await Doctor.find({user: req.user.id})
+        // const doctors = await Doctor.find({user: req.user.id})
+        const doctors = await User.find({ role: 'doctor', isVerified: false })
+        console.log('docs', doctors)
         res.json(doctors)
     } catch(err) {
         res.json(err)
+    }
+}
+
+docCtlr.doclist = async(req, res) => {
+    try{
+        const doctors = await Doctor.find({user: req.user.id})
+        console.log('doc', doctors)
+        res.json(doctors)
+    } catch(err) {
+        res.json(err.message)
     }
 }
 
@@ -18,14 +30,47 @@ docCtlr.verify = async(req,res)=>{
         const id = req.params.id
         const body = req.body
        // const todo= await User.findOneAndUpdate(id, body, {new: true, runValidators: true})
-        const verified = await User.findByIdAndUpdate(id, body , {runValidators: true , new: true})
-         res.json(verified)
+        const verifiedDoc = await User.findByIdAndUpdate(id, body, {runValidators: true , new: true})
+        res.json(verifiedDoc)
+        console.log('vd', verifiedDoc)
     }
     catch(e){
         res.json(e)
-    }
-    
+    }  
 }
+
+// docCtlr.login = async(req, res) => {
+//     try{
+//         const {email, password} = req.body
+//         const loggedInDoc = await User.findOne({email, password, role: 'doctor'})
+
+//         if(!loggedInDoc.isVerified) {
+//             return res.status(403).json({message: 'Your account is not verified yet. Please contact Admin to Verify'})
+//         }
+
+//         return res.json({message: 'login succesfull', loggedInDoc})
+//     }catch(err) {
+//         res.json(err.message)
+//     }
+// }
+
+docCtlr.verificationStatus = async(req, res) => {
+    try{
+        const id = req.params.id
+        console.log('id', id)
+        const doctor = await User.findById(id)
+
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+
+        console.log('doc status', doctor)
+        res.json({ isVerified: doctor.isVerified });
+    } catch(err) {
+        res.status(500).json({message: 'Error fetching doctor', error: err.message})
+    }
+}
+
 // admin action to remove doctor, once delete, call verify api and make isVerified to false again
 docCtlr.remove = async(req, res) => {
         try{
@@ -37,34 +82,33 @@ docCtlr.remove = async(req, res) => {
         }
     }
 
-docCtlr.create = async(req, res) => {
-    try{
-        const body = req.body
-        const slug = slugify(`${body.doctorName}-${body.clinicName}`)
-        console.log('cs', slug)
+docCtlr.create = async (req, res) => {
+    try {
+        const body = req.body;
+        console.log('body', body)
+        const slug = slugify(`${body.doctorName}-${body.clinicName}`);
+        console.log('cs', slug);
         const doctor = new Doctor({
             ...body,
             slug: slug,
             userId: req.user._id
-        })
-        //doctor.user = req.user.id
-        const doctorDocument = await doctor.save()
-        //console.log('DD', doctorDocument)
-        res.json(doctorDocument) 
-    } catch(err) {
-        res.json(err)
+        });
+            const doctorDocument = await doctor.save();
+            res.status(201).json({ message: 'Doctor profile created successfully', doctor: doctorDocument });
+        } catch (err) {
+            res.status(500).json({ error: 'Failed to create doctor profile', message: err.message });
     }
-}
-
-docCtlr.show = async(req, res) => {
-    try{
-        const slug = req.params.slug
-        console.log("slug", slug)
-        const doctor = await Doctor.findOne({slug:slug})
-        //console.log(doctor)
-        res.json(doctor)
-    } catch(err) {
-        res.json(err)
+};
+    
+docCtlr.show = async (req, res) => {
+    try {
+        const id = req.params.id; // Update the parameter name
+        console.log("ID:", id);
+        const doctor = await Doctor.findOne({  user: req.user.id });
+        console.log('doc', doctor) // Update the query
+        res.json(doctor);
+    } catch (err) {
+        res.json(err);
     }
 }
 

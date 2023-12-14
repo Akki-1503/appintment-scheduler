@@ -41,7 +41,9 @@ const doctorSchema = new mongoose.Schema({
         required: true
     },
     consultationFee: {
-        type: Number
+        type: Number,
+        required: true,
+        min: 0
     },
     slug:{
         type: String
