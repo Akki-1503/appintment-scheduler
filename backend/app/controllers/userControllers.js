@@ -24,14 +24,22 @@ usersCtlr.register = async (req, res) => {
 }
 
 usersCtlr.login = async (req, res) => {
-    try{
-        const body = pick(req.body, ['email', 'password', 'role'])
-        console.log(req.body, 'body')
-        const user = await User.findOne({email: body.email})
-        if(user) {
-            const result = await bcrypt.compare(body.password, user.password)
-            if(result) {
-                //res.json(user)
+    try {
+        const body = pick(req.body, ['email', 'password']);
+        const user = await User.findOne({ email: body.email });
+
+        if (user) {
+            const result = await bcrypt.compare(body.password, user.password);
+
+            if (result) {
+                let loggedInDoctor = null;
+                if (user.role === 'doctor') {
+                    loggedInDoctor = await User.findOne({ email: body.email, role: 'doctor' });
+                    if (loggedInDoctor && loggedInDoctor.isVerified === false) {
+                        return res.status(403).json({ message: 'Your account is not verified yet. Please contact the admin to verify.' });
+                    }
+                }
+
                 const tokenData = {
                     _id: user._id,
                     role: user.role

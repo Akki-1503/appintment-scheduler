@@ -85,6 +85,7 @@ docCtlr.remove = async(req, res) => {
 docCtlr.create = async (req, res) => {
     try {
         const body = req.body;
+        console.log('body', body)
         const slug = slugify(`${body.doctorName}-${body.clinicName}`);
         console.log('cs', slug);
         const doctor = new Doctor({
@@ -99,15 +100,15 @@ docCtlr.create = async (req, res) => {
     }
 };
     
-docCtlr.show = async(req, res) => {
-    try{
-        const slug = req.params.slug
-        console.log("slug", slug)
-        const doctor = await Doctor.findOne({slug:slug})
-        //console.log(doctor)
-        res.json(doctor)
-    } catch(err) {
-        res.json(err)
+docCtlr.show = async (req, res) => {
+    try {
+        const id = req.params.id; // Update the parameter name
+        console.log("ID:", id);
+        const doctor = await Doctor.findOne({  user: req.user.id });
+        console.log('doc', doctor) // Update the query
+        res.json(doctor);
+    } catch (err) {
+        res.json(err);
     }
 }
 
