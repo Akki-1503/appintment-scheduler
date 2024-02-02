@@ -1,30 +1,43 @@
-import { useState } from 'react';
-import { Button, Form, Container, Row, Col, Alert } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
-import { startLoginUser } from '../actions/userAction';
-import { useHistory } from 'react-router-dom';
+import { useState } from 'react'
+import { Button, Form, Container, Row, Col, Alert } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import { startLoginUser } from '../actions/userAction'
+import { useHistory } from 'react-router-dom'
 
 function LoginForm() {
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const error = useSelector((state) => state.user.error);
+  const dispatch = useDispatch()
+  const history = useHistory()
+  const error = useSelector((state) => state.user.error)
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-  });
+  })
+
+  const [validationError, setValidationError] = useState('')
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(startLoginUser(formData, history));
-  };
+    e.preventDefault()
+    if (validateForm()) {
+      dispatch(startLoginUser(formData, history))
+    }
+  }
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setValidationError('Email and password are required.')
+      return false
+    }
+    setValidationError('')
+    return true
+  }
 
   return (
     <Container>
@@ -32,6 +45,7 @@ function LoginForm() {
         <Col md={6}>
           <Form onSubmit={handleSubmit}>
             {error && <Alert variant="danger">{error}</Alert>}
+            {validationError && <Alert variant="danger">{validationError}</Alert>}
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Email address</Form.Label> <br />
               <Form.Control
@@ -59,7 +73,7 @@ function LoginForm() {
         </Col>
       </Row>
     </Container>
-  );
+  )
 }
 
-export default LoginForm;
+export default LoginForm

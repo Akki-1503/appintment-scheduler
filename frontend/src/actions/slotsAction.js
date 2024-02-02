@@ -11,6 +11,7 @@ export const startCreateSlots = (formData, history) => {
             console.log('res', response.data)
             dispatch(createSlots(response.data))
             history.push('/account')
+            window.alert('Slots created successfully')
         } catch(error) {
             alert(error)
         }
@@ -21,18 +22,23 @@ const createSlots = (data) => {
     return {type: 'CREATE_SLOTS', payload: data}
 }
 
-export const startListSlots = (id) => {
+export const startListSlots = (userId) => {
+    console.log('userid', userId)
     return async(dispatch)=> {
         try{
-            const response = await axios.get(`http://localhost:3321/api/slots/${id}`, {
+            const response = await axios.get(`http://localhost:3321/api/slots/${userId}`, {
                 headers: {
                     'Authorization': localStorage.getItem('token')
                 }
             })
-            console.log('res', response.data)
+            console.log('slots res', response.data)
             dispatch(listSlots(response.data))
         } catch(err) {
-            alert(err.message)
+            if(err.response && err.response.status === 404) {
+                dispatch(slotsError(err.response.data.message))
+            } else {
+                dispatch(slotsError('An error occured while fetching slots'))
+            }
         }
     }
 }
@@ -41,17 +47,22 @@ const listSlots = (data) => {
     return {type: 'LIST_SLOTS', payload: data}
 }
 
-export const startRequestSlot = (slotId, history) => {
+const slotsError = (message) => {
+    return {type: 'SLOTS_ERROR', payload: message}
+}
+
+export const startRequestSlot = (slotId, navigatepayment) => {
     return async(dispatch) => {
         try{
+            console.log('slotidfrom req ',slotId)
             const response = await axios.post(`http://localhost:3321/api/slots/book/${slotId}`, null,{
                 headers: {
                     'Authorization': localStorage.getItem('token') 
                 }
             })
-            console.log('res', response.data)
-            // history.push('/payment')
+            console.log('req res', response.data)
             dispatch(requestSlot(response.data))
+            navigatepayment(response.data._id, response.data.doctor)
         }catch(err) {
             alert(err.message)
         }

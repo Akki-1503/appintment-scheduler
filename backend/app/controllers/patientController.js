@@ -1,5 +1,50 @@
 const Patient = require('../models/patientModel')
+const mongoose = require('mongoose')
+const moment = require('moment')
+const Slot = require('../models/slotModel') 
+
 const patientCtlr = {}
+
+patientCtlr.listBookings = async (req, res) => {
+    try {
+        const patientId = req.params.patientId
+        console.log('patientid', patientId)
+
+        const bookings = await Slot.find({ bookedBy: patientId, isBooked: true })
+
+        console.log('bookings', bookings)
+
+        if (!bookings || bookings.length === 0) {
+            return res.status(404).json({ message: 'No bookings found for this patient' })
+        }
+
+        const formattedBookings = bookings.map(booking => {
+            const startDateTimeUTC = moment.utc(booking.startDateTime)
+            const endDateTimeUTC = moment.utc(booking.endDateTime)
+
+            const startDateTimeIST = startDateTimeUTC.clone().tz('Asia/Kolkata').subtract(5, 'hours').subtract(30, 'minutes').format('dddd, MMMM D, YYYY h:mm A')
+            const endDateTimeIST = endDateTimeUTC.clone().tz('Asia/Kolkata').subtract(5, 'hours').subtract(30, 'minutes').format('dddd, MMMM D, YYYY h:mm A')
+
+            const doctorName = booking.doctorName || (booking.doctor ? booking.doctor.username : 'Unknown Doctor')
+            console.log('doctorname', doctorName)
+
+            return {
+                doctorName: doctorName,
+                _id: booking._id,
+                startDateTime: startDateTimeIST,
+                endDateTime: endDateTimeIST,
+                interval: booking.interval,
+                confirmationStatus: booking.confimationStatus
+            }
+        })
+
+        console.log('formattedBookings', formattedBookings)
+
+        res.json(formattedBookings)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
 
 patientCtlr.create = async(req, res) => {
     try{

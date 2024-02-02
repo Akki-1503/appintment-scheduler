@@ -1,5 +1,7 @@
 const initialState = {
-    slots: []
+    slots: [],
+    slotInfo: {},
+    error: null
 }
 
 const slotReducer = (state = initialState, action) => {
@@ -14,7 +16,18 @@ const slotReducer = (state = initialState, action) => {
             console.log('action', action)
             return {
                 ...state,
-                slots: action.payload
+                slots: action.payload,
+                error: null
+            }
+        case 'REQUEST_SLOTS':
+            return {
+                ...state,
+                slotInfo: action.payload
+            }
+        case 'SLOTS_ERROR' :
+            return {
+                ...state,
+                error: action.payload
             }
             default: 
                 return state

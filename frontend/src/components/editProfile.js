@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useParams } from 'react-router-dom';
-import { startEditProfile, startFetchDoctorProfile } from '../actions/drAction';
-import { Form, Button } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useHistory, useParams } from 'react-router-dom'
+import { startEditProfile, startFetchDoctorProfile, startUpdateProfile } from '../actions/drAction'
+import { Form, Button, Image } from 'react-bootstrap'
 
 function EditProfile() {
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const { id } = useParams();
+  const dispatch = useDispatch()
+  const history = useHistory()
 
-  const user = useSelector((state) => state.user);
+  const user = useSelector((state) => state.user)
 
   useEffect(() => {
     if (user.user) {
-      dispatch(startFetchDoctorProfile(user.user._id));
+      dispatch(startFetchDoctorProfile(user.user._id))
     }
-  }, [dispatch, user]);
+  }, [dispatch, user])
 
-  const doctor = useSelector((state) => state.doctor.doctorProfiles);
+  const doctor = useSelector((state) => state.doctor.doctorProfiles)
+  console.log('doctor', doctor)
 
   const [formData, setFormData] = useState({
     doctorName: doctor?.doctorName || '',
@@ -30,28 +30,69 @@ function EditProfile() {
     experience: doctor?.experience || '',
     servicesByDoctor: doctor?.servicesByDoctor || '',
     consultationFee: doctor?.consultationFee || '',
-  });
+  })
 
-  // useEffect(() => {
-  //   dispatch(startFetchDoctorProfile(id));
-  // }, [dispatch, id]);
+  const [avatar, setAvatar] = useState(doctor?.avatar || null)
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0]
+    setAvatar(URL.createObjectURL(file))
+    setFormData({
+      ...formData,
+      avatar: file,
+    })
+  }
+  console.log('handleavatarchange', handleAvatarChange)
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(startEditProfile(formData, history));
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault()
 
+    const updatedDoctorData = {
+      ...doctor,
+      ...formData,
+      avatar: avatar
+    }
+    console.log(formData, 'formdata') 
+    console.log(avatar, 'avatar')
+    console.log( 'updatedDoctordata', updatedDoctorData)
+
+    try {
+      if (formData.avatar) {
+        await dispatch(startEditProfile(updatedDoctorData, formData.avatar, doctor._id, history))
+      }
+      history.push('/account')
+    } catch (error) {
+      console.error('Error updating profile:', error)
+    }
+  }
+    
   return (
     <div>
       <h2>Edit Profile</h2>
       <Form onSubmit={handleSubmit}>
+        {avatar && (
+          <Image
+            src={avatar}
+            alt="Doctor Avatar"
+            style={{
+              width: '100px',
+              height: '100px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+            }}
+          />
+        )}
+        <Form.Group controlId="formAvatar">
+          <Form.Label>Change Avatar</Form.Label>
+          <Form.Control type="file" accept="image/*" onChange={handleAvatarChange} />
+        </Form.Group>
         <Form.Group controlId="formEmail">
           <Form.Label>Email</Form.Label>
           <Form.Control
@@ -100,7 +141,7 @@ function EditProfile() {
                 type='text'
                 placeholder='clinic address'
                 value={formData.clinicAddress}
-                name='clinicalAddress'
+                name='clinicAddress'
                 onChange={handleChange} />
         </Form.Group>
 
@@ -124,20 +165,10 @@ function EditProfile() {
                 onChange={handleChange} />
         </Form.Group>
 
-        <Form.Group controlId='Contact'>
-            <Form.Label>Contact</Form.Label>
-            <Form.Control 
-                type='text'
-                placeholder='contact'
-                value={formData.contact}
-                name='contact'
-                onChange={handleChange} />
-        </Form.Group>
-
         <Form.Group controlId='consultationFee'>
             <Form.Label>Consultation Fee</Form.Label>
             <Form.Control 
-                type='text'
+                type='number'
                 placeholder='consultationFee'
                 value={formData.consultationFee}
                 name='consultationFee'
@@ -170,7 +201,7 @@ function EditProfile() {
         </Button>
       </Form>
     </div>
-  );
+  )
 }
 
-export default EditProfile;
+export default EditProfile

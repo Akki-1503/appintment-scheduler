@@ -1,4 +1,3 @@
-// userReducer.js
 const initialState = {
   loggedInDoctor: null,
   error: '',
@@ -6,7 +5,7 @@ const initialState = {
   isAuthenticated: false,
   token: null,
   role: null,
-};
+}
 
 const userReducer = (state = initialState, action) => {
   switch (action.type) {
@@ -16,13 +15,18 @@ const userReducer = (state = initialState, action) => {
         user: action.payload,
         isAuthenticated: true,
         error: '',
-      };
+      }
+    case 'REGISTER_ERROR':
+      return {
+        ...state,
+        error: action.payload,
+      }
     case 'USER_LOGGED_IN':
       return {
         ...state,
         loggedInDoctor: action.payload.loggedInDoctor,
         error: '',
-      };
+      }
     case 'USER_ACCOUNT':
       return {
         ...state,
@@ -31,17 +35,12 @@ const userReducer = (state = initialState, action) => {
         role: action.payload.role,
         token: action.payload.token,
         error: '',
-      };
+      }
     case 'LOGIN_ERROR':
       return {
         ...state,
         error: action.payload
       }
-    case 'REGISTER_ERROR':
-      return {
-        ...state,
-        error: action.payload,
-      };
     case 'LOGOUT_USER':
       return {
         ...state,
@@ -51,10 +50,10 @@ const userReducer = (state = initialState, action) => {
         token: null,
         role: null,
         error: '',
-      };
+      }
     default:
-      return state;
+      return state
   }
-};
+}
 
-export default userReducer;
+export default userReducer

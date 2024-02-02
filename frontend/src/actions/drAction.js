@@ -1,24 +1,31 @@
 import axios from 'axios'
 
-export const startUpdateProfile = ( data,history) => {
+export const startUpdateProfile = (data, history) => {
     return async (dispatch) => {
-        try {
-            console.log('data', data )
-            const response = await axios.post('http://localhost:3321/api/doctors/create',data, {
-                headers: {
-                    'Authorization' : localStorage.getItem('token')
-                }
-            })
-            const profileData = response.data
-            console.log('profile', profileData)
-            alert(profileData.message)
-            dispatch(updateProfile(profileData))
-           history.push('/account')
-        } catch (err) {
-            alert(err.message)
+      try {
+        const formData = new FormData()
+        for (const key in data) {
+          formData.append(key, data[key])
         }
+  
+        const response = await axios.post('http://localhost:3321/api/doctors/create', formData, {
+          headers: {
+            'Authorization': localStorage.getItem('token'),
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+  
+        const profileData = response.data
+        console.log('profile', profileData)
+        alert(profileData.message)
+        history.push('/account')
+        dispatch(updateProfile(profileData))
+      } catch (err) {
+        console.log('err', err)
+        alert(err.message)
+      }
     }
-}
+  }  
 
 const updateProfile = (data) => {
     return {type: 'UPDATE_PROFILE', payload: data}
@@ -36,34 +43,52 @@ export const startFetchDoctorProfile = (id) => {
             console.log('Doctor profile data:', response.data)
             dispatch(fetchDoctorProfile(response.data))
         } catch(err) {
+          console.log('err', err)
             alert(err)
         }
     }
 }
 
 const fetchDoctorProfile = (data) => {
-    console.log('Action payload:', data);
+    console.log('Action payload:', data)
     return{type: 'FETCH_DOCTOR_PROFILE', payload: data}
 }
 
-export const startEditProfile = (formData, history) => {
-    return async(dispatch) => {
-        try{
-            console.log(formData, 'fd')
-                const response = await axios.put(`http://localhost:3321/api/doctors/${formData._id}` , formData, {
-                    headers: {
-                        'Authorization' : localStorage.getItem('token')
-                    }
-                })
-                console.log('response', response.data)
-                dispatch(editProfile(response.data))
-                history.push('/account') 
-        } catch(err) {
-            alert(err.message)
+export const startEditProfile = (updatedDoctorData, avatarFile, doctorId, history) => {
+    return async (dispatch) => {
+      try {
+        console.log(doctorId, 'doctorid')
+        const formDataObj = new FormData()
+        for (const key in updatedDoctorData) {
+          formDataObj.append(key, updatedDoctorData[key])
         }
+        console.log('formdataobj', formDataObj)
+        
+        formDataObj.append('avatar', avatarFile)
+  
+        const response = await axios.put(
+          `http://localhost:3321/api/doctors/${doctorId}`,
+          formDataObj,
+          {
+            headers: {
+              'Authorization': localStorage.getItem('token'),
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        )
+  
+        const profileData = response.data
+        console.log('profile', profileData)
+        dispatch(editProfile(profileData))
+        window.alert('Profile updated successfully')
+        history.push('/account')
+      } catch (err) {
+        console.log('err', err)
+        alert(err.message)
+      }
     }
-}
-
+  }
+    
 const editProfile = (data) => {
     return {type: 'EDIT_PROFILE', payload: data}   
 }
@@ -86,4 +111,27 @@ export const startFetchDoctors = () => {
 
 const fetchDoctors = (data) => {
     return{type: 'FETCH_DOCTORS', payload: data}
+}
+
+export const startRemoveDoctor = (doctorId, history) => {
+  return async (dispatch) => {
+    try {
+      console.log('doctorid', doctorId)
+      await axios.delete(`http://localhost:3321/api/doctors/remove/${doctorId}`, {
+        headers: {
+          'Authorization': localStorage.getItem('token')
+        }
+      })
+      console.log('Doctor removed:', doctorId)
+      dispatch(removeDoctor(doctorId)) 
+      alert('Doctor removed successfully') 
+      history.push('/account') 
+    } catch (error) {
+      console.error('Error removing doctor:', error)
+    }
+  }
+}
+
+const removeDoctor = (doctorId) => {
+  return { type: 'REMOVE_DOCTOR_SUCCESS', payload: doctorId }
 }

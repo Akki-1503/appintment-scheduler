@@ -11,6 +11,9 @@ const patientCtlr = require('./app/controllers/patientController')
 const appointmentCtlr = require('./app/controllers/appointmentController')
 const paymentCtlr = require('./app/controllers/paymentController')
 const app = express()
+
+const multer = require('multer')
+const upload = multer()
 const PORT = 3321
 
 configureDB()
@@ -52,8 +55,8 @@ app.delete('/api/doctors/remove/:id', authenticateUser,
         next()
     }, authorizeUser, docCtlr.remove)
 
-app.post('/api/doctors/create', authenticateUser, 
-    (req, res, next) => {
+app.post('/api/doctors/create', authenticateUser, upload.single('avatar'), 
+    (req, res, next) => { console.log(req.body, 'req body', req.file, 'req file')
         req.permittedRoles = ['admin', 'doctor']
         next()
     }, authorizeUser, docCtlr.create)
@@ -64,7 +67,7 @@ app.get('/api/doctors/show/:id', authenticateUser,
         next()
     }, authorizeUser, docCtlr.show)
 
-app.put('/api/doctors/:id', authenticateUser,
+app.put('/api/doctors/:doctorId', authenticateUser, upload.single('avatar'),
     (req, res, next) => {
         req.permittedRoles = ['admin', 'doctor']   
         next()
@@ -75,6 +78,12 @@ app.delete('/api/doctors/:id', authenticateUser,
         req.permittedRoles = ['admin']
         next()
     }, authorizeUser, docCtlr.destroy)
+
+app.get('/api/doctors/list-patients/:doctorId', authenticateUser,
+    (req, res, next) => {
+        req.permittedRoles = ['doctor']
+        next()
+    }, authorizeUser, docCtlr.listPatients)
 
 app.post('/api/patient/add', authenticateUser,
     (req, res, next) => {
@@ -88,6 +97,12 @@ app.put('/api/patient/update', authenticateUser,
         next()
     }, authorizeUser, patientCtlr.update)
 
+app.get('/api/bookings/:patientId', authenticateUser,
+    (req, res, next) => {
+        req.permittedRoles = ['patient']
+        next()
+    }, authorizeUser, patientCtlr.listBookings)
+
 app.delete('/api/patient/delete', authenticateUser,
     (req, res, next) => {
         req.permittedRoles = ['patient']
@@ -100,7 +115,7 @@ app.post('/api/slots/create', authenticateUser,
         next()
     }, authorizeUser, slotCtlr.create)
 
-app.get('/api/slots/:id', authenticateUser,
+app.get('/api/slots/:userId', authenticateUser,
     (req, res, next) => {
         req.permittedRoles = ['doctor', 'patient']
         next()
@@ -142,14 +157,22 @@ app.get('/api/appointments/doctor-slots', authenticateUser,
 
 app.post('/api/appointments/:id', appointmentCtlr.show)
 
-app.post('/api/appointments/:id', appointmentCtlr.update)
+app.post('/api/appointments/email/:id', authenticateUser,
+    (req, res, next) => {
+        req.permittedRoles = ['doctor']
+        next()
+    },authorizeUser, appointmentCtlr.update)
 
-app.patch('/api/appointments/update-status/:id', appointmentCtlr.updateStatus)
+app.get('/api/appointments/confirm/:userId', authenticateUser,
+    (req, res, next) => {
+        req.permittedRoles = ['doctor']
+        next()
+    }, authorizeUser, appointmentCtlr.getConfirmedAppointments)
 
 // app.put('/appointments/:appointmentId/slots/:slotId/book', appointmentCtlr.bookSlot)
 
 app.post('/api/checkout', authenticateUser,
-    (req, res, next) => {
+    (req, res, next) => { console.log(req.body, 'req checkout')
         req.permittedRoles = ['doctor', 'patient']
         next()
     },authorizeUser, paymentCtlr.checkout)
@@ -160,12 +183,12 @@ app.post('/api/paymentstatus', authenticateUser,
         next()
     },authorizeUser, paymentCtlr.paymentStatus)
 
-// app.post('/api/confirm-payment', authenticateUser,
-//     (req, res, next) => {
-//         req.permittedRoles = ['patient']
-//         next()
-//     },authorizeUser, paymentCtlr.paymentConfirmation)
-    
+app.get('/payment/success', authenticateUser,
+    (req,res, next) => {
+        req.permittedRoles = ['patient']
+        next()
+    }, authorizeUser, paymentCtlr.paymentSuccess)
+
 app.listen(PORT, () => {
     console.log('server running on port', PORT)
 })

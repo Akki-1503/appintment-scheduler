@@ -52,7 +52,13 @@ const doctorSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Patient'
     },
-    specialization: [{type: String}]
+    specialization: [{type: String}],
+    avatar: {
+        type: Buffer,
+    },
+    avatarUrl: {
+        type: String,
+    }
 })
 
 doctorSchema.plugin(slug)

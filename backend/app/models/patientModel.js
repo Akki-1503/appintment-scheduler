@@ -22,8 +22,7 @@ const patientSchema = new Schema({
     doctor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Doctor'
-    },
-    image:[{type:String}]
+    }
 })
 
 const Patient = mongoose.model('Patient', patientSchema)

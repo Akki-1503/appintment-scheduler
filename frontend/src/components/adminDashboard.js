@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Container, Button, ListGroup } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
+import { Container, Button, ListGroup, Alert } from 'react-bootstrap'
+import { useHistory } from 'react-router-dom'
 
 const AdminDashboard = () => {
-  const [doctors, setDoctors] = useState([]);
+  const [doctors, setDoctors] = useState([])
+  const history = useHistory()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -12,15 +14,15 @@ const AdminDashboard = () => {
           headers: {
             'Authorization': localStorage.getItem('token')
           }
-        });
-        setDoctors(response.data);
+        })
+        setDoctors(response.data)
       } catch (error) {
-        console.error('Error fetching doctors:', error);
+        console.error('Error fetching doctors:', error)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   const handleVerifyDoctor = async (doctorId) => {
     try {
@@ -28,28 +30,34 @@ const AdminDashboard = () => {
         headers: {
           'Authorization': localStorage.getItem('token')
         }
-      });
-      console.log('verified Doc', verifiedDoc);
+      })
+      alert('Doctor verified successfully.')
+      history.push('/account')
+      console.log('verified doc', verifiedDoc)
     } catch (error) {
-      console.error('Error verifying doctor:', error);
+      console.error('Error verifying doctor:', error)
     }
-  };
+  }
 
   return (
     <Container>
       <h1>Registered Doctors</h1>
-      <ListGroup>
-        {doctors.map((doctor) => (
-          <ListGroup.Item key={doctor._id}>
-            {doctor.doctorName} - {doctor.email}
-            {!doctor.isVerified && (
-              <Button onClick={() => handleVerifyDoctor(doctor._id)} variant="success">Verify</Button>
-            )}
-          </ListGroup.Item>
-        ))}
-      </ListGroup>
+      {doctors.length === 0 ? (
+        <Alert variant="info">No registered doctors found.</Alert>
+      ) : (
+        <ListGroup>
+          {doctors.map((doctor) => (
+            <ListGroup.Item key={doctor._id}>
+              {doctor.username} - {doctor.email}
+              {!doctor.isVerified && (
+                <Button onClick={() => handleVerifyDoctor(doctor._id)} variant="success">Verify</Button>
+              )}
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+      )}
     </Container>
-  );
-};
+  )
+}
 
-export default AdminDashboard;
+export default AdminDashboard

@@ -1,51 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { startListSlots, startRequestSlot } from '../actions/slotsAction';
-import moment from 'moment-timezone';
-import { useParams, useHistory } from 'react-router-dom';
-import { Button, Card } from 'react-bootstrap';
-import Payment from './payment';
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { startListSlots, startRequestSlot } from '../actions/slotsAction'
+import moment from 'moment-timezone'
+import { useHistory, useParams } from 'react-router-dom'
+import { Button, Alert, Card } from 'react-bootstrap'
+import Payment from './payment'
 
 function ListSlots() {
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const { id: doctorId } = useParams();
-  console.log('doctorId', doctorId);
+  const dispatch = useDispatch()
+  const history = useHistory()
+  const { userId } = useParams()
 
-  const slots = useSelector((state) => state.slots.slots);
-  console.log('slots', slots);
-
-  const [selectedSlot, setSelectedSlot] = useState(null);
-
+  const userRole = useSelector((state) => state.user.role) 
   useEffect(() => {
-    dispatch(startListSlots(doctorId));
-  }, [dispatch, doctorId]);
+    if (userId) {
+      dispatch(startListSlots(userId))
+    }
+  }, [dispatch, userId])
 
-  const convertToIST = (utcTime) => {
-    return moment(utcTime).format('LLLL');
-  };
+  const slots = useSelector((state) => state.slots.slots)
+  const today = new Date()
+
+  const filteredSlots = slots.filter((slot) => {
+    const slotDate = new Date(slot.startDateTime)
+    return slotDate > today
+  })
+
+  const [selectedSlot, setSelectedSlot] = useState(null)
 
   const handleBook = (slotId) => {
-    console.log('Selected Slot ID:', slotId); // Log selected slot ID
-    setSelectedSlot(slotId);
-    // history.push('/payment');
-    const selectedSlot = slots.find(slot => slot._id === slotId);
-    console.log('selectedSlot', selectedSlot)
-    if (selectedSlot) {
-      history.push('/payment');
-      dispatch(startRequestSlot(slotId));
-      console.log('dispatch', dispatch)
-    } else {
-      console.error('Slot not found with ID:', slotId); // Log if slot ID not found
-    }  };
+    setSelectedSlot(slotId)
+    dispatch(startRequestSlot(slotId, navigateToPayment))
+  }
+
+  const navigateToPayment = () => {
+    history.push('/payment')
+  }
 
   return (
     <div>
-      <h2>Doctor Slots</h2>
-      {slots.map((slot) => {
-        const startDateTimeIST = convertToIST(slot.startDateTime);
-        const endDateTimeIST = convertToIST(slot.endDateTime);
+      {filteredSlots.length === 0 && (
+        <Alert variant='danger'>No upcoming slots found for this doctor.</Alert>
+      )}
 
+      {filteredSlots.map((slot) => {
+        const startDateTimeIST = moment(slot.startDateTime).format('LLLL')
+        const endDateTimeIST = moment(slot.endDateTime).format('LLLL')
         return (
           <Card key={slot._id} style={{ margin: '10px 0' }}>
             <Card.Body>
@@ -53,8 +53,10 @@ function ListSlots() {
               <Card.Text>End Date & Time: {endDateTimeIST}</Card.Text>
               <Card.Text>Interval: {slot.interval}</Card.Text>
               <Card.Text>Status: {slot.isBooked ? 'Booked' : 'Available'}</Card.Text>
+              {slot.isBooked && <Card.Text>Booked By: {slot.bookedByUsername}</Card.Text>}
 
-              {!slot.isBooked && (
+              {/* Conditionally render the button based on the user's role */}
+              {!slot.isBooked && userRole !== 'doctor' && (
                 <Button
                   onClick={() => handleBook(slot._id)}
                   disabled={slot.isBooked}
@@ -65,11 +67,11 @@ function ListSlots() {
               )}
             </Card.Body>
           </Card>
-        );
+        )
       })}
-      {selectedSlot && <Payment doctorId={doctorId} slotId={selectedSlot} />}
+      {selectedSlot && <Payment doctorId={userId} slotId={selectedSlot} />}
     </div>
-  );
+  )
 }
 
-export default ListSlots;
+export default ListSlots

@@ -8,38 +8,42 @@ export const startRegisteruser = (userData,history) => {
             dispatch(userRegister(response.data))
             console.log(response.data, 'response')
             history.push('/login')
+            window.alert('Successfully Registered Please login')
         } catch(err) {
-            alert(err.message)
+          console.error(err)
+          if (err.response && err.response.status === 400) {
+            dispatch({ type: 'REGISTER_ERROR', payload: err.response.data.message})
+          }
         }
     }
 }
 
 const userRegister = (userData) => {
-    return {type: "USER_REGISTER", payload: userData}
+    return {type: "USER_REGISTERED", payload: userData}
 }
 
 export const startLoginUser = (userData, history) => {
     return async (dispatch) => {
       try {
-        const response = await axios.post('http://localhost:3321/api/users/login', userData);
+        const response = await axios.post('http://localhost:3321/api/users/login', userData)
         console.log('loginres', response)
         const { token, loggedInDoctor } = response.data
         console.log(loggedInDoctor, 'doc')
-        localStorage.setItem('token', token);
+        localStorage.setItem('token', token)
       const user = await axios.get('http://localhost:3321/api/users/account', { headers: {
         'Authorization' : localStorage.getItem('token')
     }})  
-        dispatch(userLoggedIn(user));
-        history.push('/account');
+        dispatch(userLoggedIn(user))
+        history.push('/account')
       } catch (error) {
         if (error.response && error.response.status === 403) {
-          dispatch({ type: 'LOGIN_ERROR', payload: error.response.data.message });
+          dispatch({ type: 'LOGIN_ERROR', payload: error.response.data.message })
         } else if(error.response && error.response.status === 404) {
           dispatch({type: 'LOGIN_ERROR', payload: error.response.data.error})
         }
       }
-    };
-  };
+    }
+  }
   
   const userLoggedIn = (loggedInDoctor) => {
       return{  type: 'USER_LOGGED_IN',payload: loggedInDoctor}

@@ -4,6 +4,7 @@ const slugify = require('slugify')
 const User = require('../models/userModel')
 const Doctor = require('../models/doctorModel')
 const mailer = require('../helpers/mailer')
+const moment = require('moment-timezone')
 
 const appointmentCtlr = {}
 
@@ -21,18 +22,6 @@ appointmentCtlr.create = async(req, res) => {
     }
 }
 
-// appointmentCtlr.showBookedSlots = async(req, res) => {
-//     try{
-//         const isDoctor = req.user.role === 'doctor'
-//         const query = isDoctor? {doctor: req.user.id, status: 'confirmed'} : {user: req.user.id, status: 'confirmed'}
-//         const appointments = await Appointment.find(query)
-//             .populate(slots)
-//         res.json(appointments)
-//     } catch(err) {
-//         res.json(err)
-//     }
-// }
-
 appointmentCtlr.getAvailableSlots = async(req, res) => {
     try{
         const doctorSlug = req.query.doctorSlug
@@ -47,29 +36,33 @@ appointmentCtlr.getAvailableSlots = async(req, res) => {
     }
 }
 
-// appointmentCtlr.getAvailableSlots = async (req, res) => {
-//     try {
-//         const doctorId = req.params.id // Assuming you pass the doctor's ID in the URL
-//         const doctor = await Doctor.findById(doctorId)
-//         const availableSlots = await Slot.find({ isBooked: false })
-//         res.json(availableSlots)
-//     } catch (err) {
-//         res.status(500).json({ error: 'Internal server error' })
-//     }
-// }
-
-
 appointmentCtlr.getDoctorSlots = async (req, res) => {
     try {
-        const doctorId = req.query.doctorId
-        console.log('doctorId', doctorId)
-        const doctor = await Doctor.findOne({_id: doctorId})
-        console.log('doctor', doctor)
-        const slots = await Slot.find({ isBooked: true })
-        console.log('slots', slots)
-        res.json(slots)
+        const userId = req.query.userId 
+        console.log('dr.Id app', userId)
+
+        const appointments = await Slot.find({ 'doctor': userId, 'isBooked': true })
+
+        if (!appointments || appointments.length === 0) {
+            return res.status(404).json({ message: 'No appointments available' })
+        }
+
+        const updatedAppointments = appointments.map(appointment => {
+            return ({
+                _id: appointment._id,
+                startDateTime: appointment.startDateTime,
+                endDateTime: appointment.endDateTime,
+                patientName: appointment.bookedByUsername,
+                interval: appointment.interval,
+                doctor: appointment.doctor,
+                isBooked: appointment.isBooked,
+                confimationStatus: appointment.confimationStatus
+            })
+        })
+
+        res.json(updatedAppointments)
     } catch (err) {
-        res.json({ message: err.message })
+        res.status(500).json({ message: err.message })
     }
 }
 
@@ -88,47 +81,70 @@ appointmentCtlr.show = async(req, res) => {
     }
 }
 
-appointmentCtlr.update = async(req, res) => {
+appointmentCtlr.update = async (req, res) => {
     try {
-        const id = req.params.id
-        const body = req.body
-        const data = await Slot.findByIdAndUpdate({_id: id}, {isBooked: body.isBooked}, {new: true})
-        const recipientEmail = 'm.r.akhilab1122@gmail.com'
-        let emailSubject, emailContent
-        if(body.isBooked) {
-            emailSubject= 'Slot Booking Confirmation'
-            emailContent= 'Your slot has been booked.'
-        } else {
-            emailSubject= 'Slot Cancellation'
-            emailContent= 'Your slot has been cancelled'
+      const id = req.params.id
+      console.log('email id', id)
+      const body = req.body
+      console.log('body', body)
+      const updatedSlot = await Slot.findByIdAndUpdate(
+        { _id: id },
+        { confimationStatus: body.confimationStatus },
+        { new: true }
+      )
+      console.log('updatedSlot', updatedSlot)
+      const recipientEmail = updatedSlot.bookedByEmail 
+      console.log('recipientemail', recipientEmail)
+      let emailSubject, emailContent
+      const doctorName = updatedSlot.doctorName
+      console.log('doctordetails', doctorName)
+
+      const startDateTime = updatedSlot.startDateTime 
+      console.log('startdatetime', startDateTime)
+        
+      const utcDateTime = moment.utc(startDateTime)
+      const ISTDateTime = utcDateTime.tz('Asia/Kolkata').subtract(5, 'hours').subtract(30, 'minutes').format('dddd, MMMM D, YYYY h:mm A')
+      
+      if (body.confimationStatus === 'confirmed') {
+        emailSubject = 'Appointment Confirmation'
+        emailContent = `Your appointment for consulting Dr. ${doctorName} on ${ISTDateTime} has been confirmed by the doctor.`
+      } else if (body.confimationStatus === 'cancelled') {
+        emailSubject = 'Appointment Cancellation'
+        emailContent = `Your appointment for consulting Dr. ${doctorName} on ${ISTDateTime} has been cancelled by the doctor due to emergency reasons. You can book your appointment again, and your payment will be refunded within 48 business hours.`
+      }
+      
+        
+      mailer.sendEmail(
+        process.env.USER_EMAIL,
+        recipientEmail,
+        emailSubject,
+        emailContent,
+        (error, response) => {
+          if (error) {
+            console.error('email sending failed:', error)
+          } else {
+            console.log('email sent successfully:', response)
+          }
         }
-        mailer.sendEmail(
-            "sushmithasp.murthy@gmail.com",
-            recipientEmail,
-            emailSubject,emailContent,
-            (error, response) => {
-                if(error) {
-                    console.error('email sending failed:', error)
-                } else {
-                    console.log('email sent successfully:', response)
-                }
-            }
-        )
-        res.json(data)
-    } catch(err) {
-        res.json(err)
+      )
+  
+      res.json(updatedSlot)
+    } catch (err) {
+      res.json(err)
     }
+  }
+  
+appointmentCtlr.getConfirmedAppointments = async (req, res) => {
+  try{
+    const userId = req.params.userId
+    console.log('userid', userId)
+    const confirmedAppointments = await Slot.find({ doctor : userId, confimationStatus: 'confirmed'})
+    console.log('confirmedappointments', confirmedAppointments)
+    res.json(confirmedAppointments)
+  } catch (err) {
+    console.log('err', err)
+    res.status(500).json({ error: 'Internal server error' })
+  }
 }
 
-appointmentCtlr.updateStatus = async(req, res) => {
-    try{
-        const id = req.params.id
-        const body = req.body
-        const data = await Appointment.findByIdAndUpdate({_id: id}, {status: body.status}, {new: true})
-        res.json(data)
-    } catch(err) {
-        res.json(err)
-    }
-}
- 
 module.exports = appointmentCtlr

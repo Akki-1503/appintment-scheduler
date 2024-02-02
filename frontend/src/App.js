@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import NavBar from './components/navbar'
-import {jwtDecode} from 'jwt-decode'
+import jwt_decode from 'jwt-decode'
 import { useDispatch, useSelector } from 'react-redux'
 import './components/timeZone'
 import { startGetUserAccount } from './actions/userAction'
@@ -18,8 +18,13 @@ import DoctorAppointments from "./components/doctorAppointments"
 import DoctorProfile from "./components/doctorProfile"
 import Payment from "./components/payment"
 import AdminDashboard from "./components/adminDashboard"
-import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
-
+import 'bootstrap/dist/css/bootstrap.min.css'
+import PaymentSuccess from "./components/paymentSuccess"
+import PaymentFailure from './components/paymentFailure'
+import { BookingProvider } from './components/bookingContext'
+import BookingsList from './components/bookingList'
+import DoctorPatientsList from './components/patientsList'
+import ConfirmedAppointmentsCalendar from './components/confirmedAppointments'
 
 const App = (props) => {
     const [userLoggedIn, setUserLoggedIn] = useState(false)
@@ -28,8 +33,10 @@ const App = (props) => {
 
     const doctor = useSelector((state) => state.doctor.doctorProfiles);
     console.log('doctor', doctor)
-    const doctorId = doctor && doctor._id
+    const doctorId = doctor?._id
     console.log('doctorId', doctorId)
+    const userId = doctor.userId
+    console.log('userId', userId)
 
     const handleAuth = () => {
         setUserLoggedIn(!userLoggedIn) 
@@ -38,14 +45,9 @@ const App = (props) => {
     useEffect(() => {
         if(userLoggedIn) {
             const token = localStorage.getItem('token')
-            const decoded = jwtDecode(token)
+            const decoded = jwt_decode(token)
             const userRole = decoded.role
             setRole(userRole)
-
-
-            // if(userRole === 'doctor') {
-            //     dispatch(startUpdateProfile())
-            // }
         }
     }, [ userLoggedIn])
 
@@ -60,29 +62,37 @@ const App = (props) => {
     return (
         <div>
             <NavBar userLoggedIn={userLoggedIn} handleAuth={handleAuth} role={role} />
-            <div className="container mt-4">
-                <Switch>
-                    <Route path="/" component={Home} exact={true} />
-                    <Route path="/register" component={RegistrationForm} exact={true} />
-                    <Route path="/login" render={(props) => {
-                        return <LoginForm {...props} handleAuth={handleAuth} />
-                    }}
-                    />
-                    <Route path="/account" component={AccountInfo} />
-                    <Route path='/admin-dashboard' component={AdminDashboard} />
-                    <Route path="/doctor-dashboard" component={DoctorDashboard} />
-                    <Route path="/create-slots" component={CreateSlots} />
-                    <Route path="/edit-profile/:id" component={EditProfile} />
-                    <Route path="/my-appointments" component={DoctorAppointments} />
-                    <Route
-                        path="/doctor-profile"
-                        render={() => <DoctorProfile doctorId={doctorId} />}
-                    />
-                    <Route path="/payment" component={Payment} />
-                    <Route path="/doctor-details" component={DoctorDetails} />
-                    <Route path="/list-slots/:id" component={ListSlots} />
-                </Switch>
-            </div>
+                <div className="container mt-4">
+                    <Switch>
+                        <Route path="/" component={Home} exact={true} />
+                        <Route path="/register" component={RegistrationForm} exact={true} />
+                        <Route path="/login" render={(props) => {
+                            return <LoginForm {...props} handleAuth={handleAuth} />
+                        }}
+                        />
+                        <Route path="/account" component={AccountInfo} />
+                        <Route path='/admin-dashboard' component={AdminDashboard} />
+                        <Route path="/doctor-dashboard" component={DoctorDashboard} />
+                        <Route path="/create-slots" component={CreateSlots} />
+                        <Route path="/edit-profile/:id" component={EditProfile} />
+                        <Route path="/my-appointments" component={DoctorAppointments} />
+                        <Route path="/confirmed-appointments/:userId" render={() => <ConfirmedAppointmentsCalendar userId={userId} /> } />
+                        <Route
+                            path="/doctor-profile"
+                            render={() => <DoctorProfile doctorId={doctorId} />}
+                        />
+                        <Route path="/payment/success" component={PaymentSuccess} />
+                        <Route path="/payment" component={Payment} />
+                        <Route path="/doctor-details" component={DoctorDetails} />
+                        <Route path="/list-slots/:userId" component={ListSlots} />
+                        <Route path="/payment/cancel" component={PaymentFailure} />
+                        <Route path="/list-patients/:doctorId" component={DoctorPatientsList} />
+                        
+                        <BookingProvider>
+                            <Route path="/my-bookings" component={BookingsList} />
+                        </BookingProvider>
+                    </Switch>
+                </div>
         </div>
     )
 }

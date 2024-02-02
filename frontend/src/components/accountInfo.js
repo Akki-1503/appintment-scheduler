@@ -1,19 +1,17 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { startGetUserAccount } from '../actions/userAction';
-import { Container, Row, Col, Alert } from 'react-bootstrap'; // Import Bootstrap components
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { startGetUserAccount } from '../actions/userAction'
+import { Container, Row, Col, Alert } from 'react-bootstrap' 
 
 function AccountInfo() {
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user); // Assuming user data is stored in the Redux state
-  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
-  const role = useSelector((state) => state.user.role);
+  const dispatch = useDispatch()
+  const user = useSelector((state) => state.user.user) 
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated)
+  const role = useSelector((state) => state.user.role)
 
   useEffect(() => {
-    // Dispatch the account retrieval action when the component mounts
-    dispatch(startGetUserAccount());
-    //dispatch(startSetUserRole());
-  }, [dispatch]);
+    dispatch(startGetUserAccount())
+  }, [dispatch])
 
   return (
     <Container>
@@ -29,7 +27,7 @@ function AccountInfo() {
         <Alert variant="warning">Please log in to view your account information.</Alert>
       )}
     </Container>
-  );
+  )
 }
 
-export default AccountInfo;
+export default AccountInfo
