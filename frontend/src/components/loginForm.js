@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button, Form, Container, Row, Col, Alert } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { startLoginUser } from '../actions/userAction'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 
 function LoginForm() {
   const dispatch = useDispatch()
@@ -15,6 +15,7 @@ function LoginForm() {
   })
 
   const [validationError, setValidationError] = useState('')
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -33,9 +34,11 @@ function LoginForm() {
   const validateForm = () => {
     if (!formData.email || !formData.password) {
       setValidationError('Email and password are required.')
+      setShowForgotPassword(true) 
       return false
     }
     setValidationError('')
+    setShowForgotPassword(false) 
     return true
   }
 
@@ -68,7 +71,12 @@ function LoginForm() {
             </Form.Group>
             <Button variant="primary" type="submit">
               Login
-            </Button>
+            </Button>  <br />
+            {showForgotPassword && ( 
+              <div className="mt-3">
+                <Link to="/forgot-password" className="btn btn-link text-danger">Forgot Password</Link>
+              </div>
+            )}
           </Form>
         </Col>
       </Row>

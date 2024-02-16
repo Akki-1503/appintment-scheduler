@@ -25,6 +25,7 @@ import { BookingProvider } from './components/bookingContext'
 import BookingsList from './components/bookingList'
 import DoctorPatientsList from './components/patientsList'
 import ConfirmedAppointmentsCalendar from './components/confirmedAppointments'
+import ForgotPassword from './components/forgotPassword'
 
 const App = (props) => {
     const [userLoggedIn, setUserLoggedIn] = useState(false)
@@ -87,6 +88,7 @@ const App = (props) => {
                         <Route path="/list-slots/:userId" component={ListSlots} />
                         <Route path="/payment/cancel" component={PaymentFailure} />
                         <Route path="/list-patients/:doctorId" component={DoctorPatientsList} />
+                        <Route path="/forgot-password" component={ForgotPassword} />
                         
                         <BookingProvider>
                             <Route path="/my-bookings" component={BookingsList} />

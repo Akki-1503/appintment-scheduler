@@ -24,6 +24,7 @@ app.post('/api/users/register', usersCtlr.register)
 app.post('/api/users/login', usersCtlr.login)
 app.get('/api/users/account',authenticateUser ,usersCtlr.account)
 app.get('/api/users/:role', authenticateUser, usersCtlr.role)
+app.post('/api/users/reset-password', usersCtlr.resetPassword)
 
 // app.post('/api/doctor/login', authenticateUser, docCtlr.login)
 

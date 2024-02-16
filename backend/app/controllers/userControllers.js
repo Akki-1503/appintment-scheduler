@@ -104,4 +104,29 @@ usersCtlr.role = async(req, res) => {
     }
 }
 
+usersCtlr.resetPassword = async(req, res) => {
+    try{
+        const {email, newPassword, confirmNewPassword} = req.body
+
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ error: 'PasswordMismatch', message: 'New password and confirm password do not match' })
+        }
+
+        const user = await User.findOne({email})
+
+        if (!user) {
+            return res.status(404).json({ error: 'UserNotFound', message: 'User not found' })
+        }
+
+        const salt = await bcrypt.genSalt()
+        const hashedPassword = await bcrypt.hash(newPassword, salt)
+        user.password = hashedPassword
+        await user.save()
+        res.json({message: 'Password Changed Successfully'})
+    } catch(err) {
+        console.log(err)
+        res.status(500).json({ error: 'ServerError', message: 'An error occurred while processing your request.' })
+    }
+}
+
 module.exports = usersCtlr

@@ -15,6 +15,16 @@ const userSchema = new mongoose.Schema({
         minLength: 8,
         maxLength: 128
     },
+    newPassword: {
+        type: String,
+        minLength: 8,
+        maxLength: 128
+    },
+    confirmNewPassword: {
+        type: String,
+        minLength: 8,
+        maxLength: 128
+    },
     role: {
         type: String,
         required: true,
